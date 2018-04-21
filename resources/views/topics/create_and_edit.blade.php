@@ -21,10 +21,10 @@
 
             <div class="panel-body">
                 @if($topic->id)
-                    <form action="{{ route('topics.update', $topic->id) }}" method="POST" accept-charset="UTF-8">
+                    <form action="{{ route('topics.update', $topic->id) }}" method="POST" accept-charset="UTF-8" enctype="multipart/form-data">
                         <input type="hidden" name="_method" value="PUT">
                 @else
-                    <form action="{{ route('topics.store') }}" method="POST" accept-charset="UTF-8">
+                    <form action="{{ route('topics.store') }}" method="POST" accept-charset="UTF-8" enctype="multipart/form-data">
                 @endif
 
                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
@@ -46,7 +46,6 @@
                         <textarea name="body" class="form-control" id="editor" rows="3" placeholder="请填入至少三个字符的内容。" required>{{ old('body', $topic->body ) }}</textarea>
                     </div>
 
-
                     <div class="well well-sm">
                         <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 保存</button>
                     </div>
@@ -63,16 +62,25 @@
 @stop
 
 @section('scripts')
-    <script src="{{ asset('js/module.js') }}" charset="utf-8"></script>
-    <script src="{{ asset('js/hotkeys.js') }}" charset="utf-8"></script>
-    <script src="{{ asset('js/simditor.js') }}" charset="utf-8"></script>
-    <script src="{{ asset('js/uploader.js') }}" charset="utf-8"></script>
+    <script type="text/javascript"  src="{{ asset('js/module.js') }}"></script>
+    <script type="text/javascript"  src="{{ asset('js/hotkeys.js') }}"></script>
+    <script type="text/javascript"  src="{{ asset('js/uploader.js') }}"></script>
+    <script type="text/javascript"  src="{{ asset('js/simditor.js') }}"></script>
 
-    <script type="text/javascript">
-        $(document).ready(function() {
-            var editor = new Simditor({
-                textarea: $('#editor'),
-            });
+    <script>
+    $(document).ready(function(){
+        var editor = new Simditor({
+            textarea: $('#editor'),
+            upload: {
+                url: '{{ route('topics.upload_image') }}',
+                params: { _token: '{{ csrf_token() }}' },
+                fileKey: 'upload_file',
+                connectionCount: 3,
+                leaveConfirm: '文件上传中，关闭此页面将取消上传。'
+            },
+            pasteImage: true,
         });
+    });
     </script>
+
 @stop

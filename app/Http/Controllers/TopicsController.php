@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Handlers\ImageUploadHandler;
 use App\Models\Topic;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class TopicsController extends Controller
         $this->middleware('auth', ['except' => ['index', 'show']]);
     }
 
-    public function index(Request $request, Topic $topic)
+    public function index(Request $request)
     {
         $topics = Topic::withOrder($request->order)->paginate();
         return view('topics.index', compact('topics'));
@@ -42,12 +43,23 @@ class TopicsController extends Controller
         return redirect()->route('topics.show', $topic->id)->with('message', 'Created successfully.');
     }
 
+    /**
+     * @param Topic $topic
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function edit(Topic $topic)
     {
         $this->authorize('update', $topic);
         return view('topics.create_and_edit', compact('topic'));
     }
 
+    /**
+     * @param TopicRequest $request
+     * @param Topic $topic
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function update(TopicRequest $request, Topic $topic)
     {
         $this->authorize('update', $topic);
@@ -56,11 +68,42 @@ class TopicsController extends Controller
         return redirect()->route('topics.show', $topic->id)->with('message', 'Updated successfully.');
     }
 
+    /**
+     * @param Topic $topic
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Exception
+     */
     public function destroy(Topic $topic)
     {
         $this->authorize('destroy', $topic);
         $topic->delete();
 
         return redirect()->route('topics.index')->with('message', 'Deleted successfully.');
+    }
+
+    /**
+     * @param Request $request
+     * @param ImageUploadHandler $uploader
+     */
+    public function uploadImage(Request $request, ImageUploadHandler $uploader)
+    {
+        $data = [
+            'success' => false,
+            'msg' => '上传失败!',
+            'file_path' => ''
+        ];
+
+        if ($file = $request->upload_file) {
+            //保存图片到本地
+            $result = $uploader->save($file, 'topics', \Auth::id(), 1024);
+            //图片保存成功的话
+            if ($result) {
+                $data['success'] = true;
+                $data['msg'] = '上传成功';
+                $data['file_path'] = $result['path'];
+            }
+        }
+        return $data;
     }
 }
