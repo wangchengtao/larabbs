@@ -19,12 +19,24 @@ class UsersController extends Controller
         return view('users.show', compact('user'));
     }
 
+    /**
+     * @param \App\Models\User $user
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function edit(User $user)
     {
         $this->authorize('update', $user);
         return view('users.edit', compact('user'));
     }
 
+    /**
+     * @param \App\Http\Requests\UserRequest   $request
+     * @param \App\Handlers\ImageUploadHandler $uploader
+     * @param \App\Models\User                 $user
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function update(UserRequest $request, ImageUploadHandler $uploader, User $user)
     {
         $this->authorize('update', $user);
